@@ -1,2 +1,1 @@
-# Fundcast
-A crowd funding app for podcasters
+# SecurityManager Backend
