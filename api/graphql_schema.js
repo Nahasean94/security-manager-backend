@@ -89,8 +89,8 @@ const processProfilePicture = async (upload, uploader) => {
 }
 
 
-const PersonType = new GraphQLObjectType({
-    name: 'Person',
+const AdminType = new GraphQLObjectType({
+    name: 'Admin',
     fields: () => ({
         id: {type: GraphQLID},
         username: {type: GraphQLString},
@@ -99,13 +99,40 @@ const PersonType = new GraphQLObjectType({
         date_joined: {type: GraphQLString},
     })
 })
+const GuardType = new GraphQLObjectType({
+    name: 'Guard',
+    fields: () => ({
+        id: {type: GraphQLID},
+        surname: {type: GraphQLString},
+        email: {type: GraphQLString},
+        profile_picture: {type: GraphQLString},
+        timestamp: {type: GraphQLString},
+        guard_id: {type: GraphQLInt},
+        first_name: {type: GraphQLString},
+        last_name: {type: GraphQLString},
+        dob: {type: GraphQLString},
+        gender: {type: GraphQLString},
+        password: {type: GraphQLString},
+        nationalID: {type: GraphQLInt},
+        employment_date: {type: GraphQLString},
+        location: {type: GraphQLString},
+    })
+})
+const LocationType = new GraphQLObjectType({
+    name: 'Location',
+    fields: () => ({
+        id: {type: GraphQLID},
+        name: {type: GraphQLString},
+        timestamp: {type: GraphQLString},
+    })
+})
 
 const UploadType = new GraphQLObjectType({
     name: 'Uploads',
     fields: () => ({
         id: {type: GraphQLID},
         uploader: {
-            type: PersonType,
+            type: AdminType,
         },
         path: {type: GraphQLString},
         timestamp: {type: GraphQLString},
@@ -156,7 +183,7 @@ const PodcastType = new GraphQLObjectType({
         tags: {type: new GraphQLList(GraphQLString)},
         listens: {type: GraphQLInt},
         hosts: {
-            type: new GraphQLList(PersonType),
+            type: new GraphQLList(AdminType),
             resolve(parent, args) {
                 return parent.hosts.map(host => {
                     return queries.findUser({id: host})
@@ -223,7 +250,7 @@ const LikeType = new GraphQLObjectType({
     fields: () => ({
         id: {type: GraphQLID},
         person: {
-            type: PersonType,
+            type: AdminType,
             async resolve(parent, args) {
                 return await queries.findUser({id: parent.liked_by})
             }
@@ -237,7 +264,7 @@ const CommentRepliesType = new GraphQLObjectType({
         id: {type: GraphQLID},
         name: {type: GraphQLString},
         author: {
-            type: PersonType,
+            type: AdminType,
             resolve(parent, args) {
 
             }
@@ -257,7 +284,7 @@ const CommentType = new GraphQLObjectType({
     fields: () => ({
         id: {type: GraphQLID},
         author: {
-            type: PersonType,
+            type: AdminType,
             async resolve(parent, args) {
                 return await queries.findUser({id: parent.author})
             }
@@ -309,22 +336,22 @@ const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
     fields: {
         person: {
-            type: PersonType,
+            type: AdminType,
             args: {id: {type: GraphQLID}},
             resolve(parent, args) {
                 return queries.findUser({id: args.id})
             }
         },
         people: {
-            type: new GraphQLList(PersonType),
+            type: new GraphQLList(AdminType),
             resolve: () => {
                 return queries.findAllUsers()
             }
         },
-        hosts: {
-            type: new GraphQLList(PersonType),
+        locations: {
+            type: new GraphQLList(LocationType),
             resolve: () => {
-                return queries.findAllHosts()
+                return queries.findAllLocations()
             }
         },
         podcast: {
@@ -341,7 +368,7 @@ const RootQuery = new GraphQLObjectType({
             }
         },
         getProfileInfo: {
-            type: PersonType,
+            type: AdminType,
             async resolve(parent, args, ctx) {
                 return await authentication.authenticate(ctx).then(async ({id}) => {
                     return await queries.findUser({id: id})
@@ -349,7 +376,7 @@ const RootQuery = new GraphQLObjectType({
             }
         },
         fetchUserProfile: {
-            type: PersonType,
+            type: AdminType,
             args: {id: {type: GraphQLID}},
             async resolve(parent, args, ctx) {
                 return await queries.findUser({id: args.id})
@@ -450,7 +477,7 @@ const Mutation = new GraphQLObjectType({
                 name: {type: GraphQLString},
             },
             async resolve(parent, args, ctx) {
-                return await queries.isUserExists(args).then(location => {
+                return await queries.isLocationExists(args).then(location => {
                     return {exists: !!location}
 
                 })
@@ -458,7 +485,7 @@ const Mutation = new GraphQLObjectType({
             }
         },
         signup: {
-            type: PersonType,
+            type: AdminType,
             args: {
                 username: {type: GraphQLString},
                 email: {type: GraphQLString},
@@ -470,8 +497,38 @@ const Mutation = new GraphQLObjectType({
                 })
             }
         },
+        registerGuardPersonalDetails: {
+            type: GuardType,
+            args: {
+                guard_id: {type: GraphQLInt},
+                surname: {type: GraphQLString},
+                first_name: {type: GraphQLString},
+                last_name: {type: GraphQLString},
+                dob: {type: GraphQLString},
+                gender: {type: GraphQLString},
+                password: {type: GraphQLString},
+                nationalID: {type: GraphQLInt},
+                employment_date: {type: GraphQLString},
+            },
+            async resolve(parent, args, ctx) {
+                return await queries.registerGuardPersonalDetails(args).then(guard => {
+                    return guard
+                })
+            }
+        },
+        addLocation: {
+            type: LocationType,
+            args: {
+                name: {type: GraphQLString},
+            },
+            async resolve(parent, args, ctx) {
+                return await queries.addLocation(args).then(location => {
+                    return location
+                })
+            }
+        },
         updateProfile: {
-            type: PersonType,
+            type: AdminType,
             args: {
                 id: {type: GraphQLID},
                 username: {type: GraphQLString},

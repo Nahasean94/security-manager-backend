@@ -3,7 +3,7 @@
  */
 
 "use strict"
-const {Person, Salary, Message, AttendanceRegister, Location,Admin} = require('./schemas')//import various models
+const {Guard, Salary, Message, AttendanceRegister, Location,Admin} = require('./schemas')//import various models
 const mongoose = require('mongoose')//import mongoose library
 const bcrypt = require('bcrypt')//import bcrypt to assist hashing passwords
 //Connect to Mongodb
@@ -22,7 +22,7 @@ const queries = {
     },
     updateProfile: async function (id, profile) {
 
-        return await Person.findOneAndUpdate({_id: id}, {
+        return await Guard.findOneAndUpdate({_id: id}, {
             username: profile.username,
             email: profile.email,
 
@@ -48,13 +48,13 @@ const queries = {
     likeComment: async function (ctx, id) {
         return await Comment.findOneAndUpdate({
             _id: id,
-            author: {$ne: ctx.currentUser.id},
-            'likes.liked_by': {$ne: ctx.currentUser.id}
+            author: {$ne: ctx.currentGuard.id},
+            'likes.liked_by': {$ne: ctx.currentGuard.id}
 
         }, {
             $push: {
                 likes: {
-                    liked_by: ctx.currentUser.id
+                    liked_by: ctx.currentGuard.id
                 }
             }
         }, {new: true}).exec()
@@ -115,7 +115,7 @@ const queries = {
     //     })
     // },
     viewTwinpal: async function (id) {
-        return Person.findOne({
+        return Guard.findOne({
             '_id': id
         }).select('first_name last_name profile_picture podcasts').exec()
     }
@@ -128,6 +128,51 @@ const queries = {
             profile_picture: 'default.jpg',
             date_joined: new Date()
         }).save()
+    },
+    registerGuardPersonalDetails: async function (userInfo) {
+        return await new Guard({
+            guard_id: userInfo.guard_id,
+            surname: userInfo.surname,
+            first_name: userInfo.first_name,
+            last_name: userInfo.last_name,
+            dob: userInfo.dob,
+            gender: userInfo.gender,
+            nationalID: userInfo.nationalID,
+            employment_date: userInfo.employment_date,
+            password: bcrypt.hashSync(userInfo.password, 10),
+            email: userInfo.email,
+            profile_picture: 'default.jpg',
+            date_joined: new Date()
+        }).save()
+    },
+    /**
+     *
+     * Tag.findOneAndUpdate({
+                    name: tag
+                }, {$push: {podcasts: podcast._id}},{upsert:true}).exec()
+     })
+     */
+    registerGuardContactDetails: async function (userInfo) {
+        return await new Guard({
+            guard_id: userInfo.guard_id,
+            surname: userInfo.surname,
+            first_name: userInfo.first_name,
+            last_name: userInfo.last_name,
+            dob: userInfo.dob,
+            gender: userInfo.gender,
+            nationalID: userInfo.nationalID,
+            employment_date: userInfo.employment_date,
+            password: bcrypt.hashSync(userInfo.password, 10),
+            email: userInfo.email,
+            profile_picture: 'default.jpg',
+            date_joined: new Date()
+        }).save()
+    },
+    addLocation: async function (location) {
+        return await new Location({
+            name: location.name,
+            date_joined: new Date()
+        }).save()
     }
     ,
 // findComments: async function (podcast_id) {
@@ -137,15 +182,15 @@ const queries = {
     findPodcasts: async function (ctx) {
         return await Podcast.find({
             $or: [{
-                author: ctx.currentUser.id,
+                author: ctx.currentGuard.id,
             },
                 {
-                    profile: ctx.currentUser.id
+                    profile: ctx.currentGuard.id
                 }]
         }).populate('uploads').populate('author', 'username profile_picture').populate('profile', 'username profile_picture').limit(2).exec()
     },
-    findUserPodcasts: async function (args) {
-        // return await Person.findById(args).select("podcasts").sort({timestamp: -1}).exec()
+    findGuardPodcasts: async function (args) {
+        // return await Guard.findById(args).select("podcasts").sort({timestamp: -1}).exec()
         return await Podcast.find({
             $or: [{
                 author: args,
@@ -156,8 +201,8 @@ const queries = {
         }).sort({timestamp: -1}).exec()
     }
     ,
-    findUserUploads: async function (args) {
-        return await Person.findById(args._id).select("uploads").sort({timestamp: -1}).exec()
+    findGuardUploads: async function (args) {
+        return await Guard.findById(args._id).select("uploads").sort({timestamp: -1}).exec()
     }
     ,
     fetchNewsFeed: async function (ctx) {
@@ -173,19 +218,19 @@ const queries = {
     ,
 
     storeProfilePicture: async function (path, uploader) {
-        return await Person.findOneAndUpdate({
+        return await Guard.findOneAndUpdate({
             _id: uploader,
         }, {profile_picture: path}).exec()
     }
     ,
     findTwinpals: async function (args) {
-        return await Person.find({
+        return await Guard.find({
             'birthday': args.birthday
         }).where('_id').ne(args.id).exec()
     }
     ,
-    findUsers: async function () {
-        return await Person.find({}).exec()
+    findGuards: async function () {
+        return await Guard.find({}).exec()
     }
     ,
     findAllPodcasts: async function () {
@@ -193,11 +238,14 @@ const queries = {
     }
     ,
     findAllHosts: async function () {
-        return await Person.find({role:'host'}).exec()
+        return await Guard.find({role:'host'}).exec()
+    } ,
+    findAllLocations: async function () {
+        return await Location.find().exec()
     } ,
 
-    findAllUsers: async function () {
-        return await Person.find({}).exec()
+    findAllGuards: async function () {
+        return await Guard.find({}).exec()
     }
     ,
     findPodcast: async function (args) {
@@ -217,19 +265,19 @@ const queries = {
     }
     ,
     findLikedPodcasts: async function (args) {
-        return await Person.findById(args.id).select('liked_podcasts').exec()
+        return await Guard.findById(args.id).select('liked_podcasts').exec()
     }
     ,
     findUpload: async function (args) {
         return await Upload.findById(args.id).exec()
     }
     ,
-    findUser: async function (args) {
-        return await Person.findById(args.id).exec()
+    findGuard: async function (args) {
+        return await Guard.findById(args.id).exec()
     }
     ,
-    isUserExists: async function (args) {
-        return await Person.findOne({email: args.email}).exec()
+    isGuardExists: async function (args) {
+        return await Guard.findOne({email: args.email}).exec()
     },
     isLocationExists: async function (args) {
         return await Location.findOne({name: args.name}).exec()

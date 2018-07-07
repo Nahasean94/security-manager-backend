@@ -20,32 +20,50 @@ const mongoose = require('mongoose')
 //declare the Schema object. Each Schema object represents the equivalent of table in mysql
 const Schema = mongoose.Schema
 
-//create the Person Schema (Person table)
-const PersonSchema = new Schema({
-    employee_id: String,
+//create the Guard Schema (Guard table)
+const GuardSchema = new Schema({
+    guard_id: String,
     email: {
         type: String,
         unique: [true, "email already exists"],
     },
+    surname_name: {
+        type: String,
+    },
     first_name: {
         type: String,
-        required: [true, 'Password is a required field']
+        required: [true, 'first_name is a required field']
     },
     last_name: {
         type: String,
-        required: [true, 'Password is a required field']
+        required: [true, 'last_name is a required field']
     },
     password: {
         type: String,
-        required: [true, 'Password is a required field']
+        required: [true, 'password is a required field']
+    },
+    dob: {
+        type: Date,
+        required: [true, 'dob is a required field']
+    },
+    gender: {
+        type: String,
+        required: [true, 'gender is a required field']
+    },
+    nationalID: {
+        type: Number,
+        required: [true, 'nationalID is a required field']
     },
     profile_picture: String,
     address: String,
-    cellphone: {
-        type: Number,
-        required: ['cellphone is a required field']
+    cellphone: Number,
+    location: {
+        type: Schema.Types.ObjectId,
+        ref: 'Location',
     },
     timestamp: Date,
+    employment_date: Date,
+
 
 })
 const AdminSchema = new Schema({
@@ -64,7 +82,7 @@ const AdminSchema = new Schema({
 const SalarySchema = new Schema({
     employee: {
         type: Schema.Types.ObjectId,
-        ref: 'Person',
+        ref: 'Guard',
         required: [true, 'employee_id is required']
     },
     gross_salary: {
@@ -90,7 +108,7 @@ const SalarySchema = new Schema({
 const AttendanceRegisterSchema = new Schema({
     employee_id: {
         type: Schema.Types.ObjectId,
-        ref: 'Person',
+        ref: 'Guard',
         required: [true, 'employee_id is required']
     },
     signin: {
@@ -118,13 +136,13 @@ const LocationSchema = new Schema({
 const MessageSchema = new Schema({
     author: {
         type: Schema.Types.ObjectId,
-        ref: 'Person',
+        ref: 'Guard',
         required: [true, 'employee_id is required']
     },
     replies: [{
         author: {
             type: Schema.Types.ObjectId,
-            ref: 'Person',
+            ref: 'Guard',
             required: [true, 'employee_id is required']
         },
         body: {
@@ -140,7 +158,7 @@ const MessageSchema = new Schema({
  *
  * Create models from the above schemas.
  */
-const Person = mongoose.model('Person', PersonSchema)
+const Guard = mongoose.model('Guard', GuardSchema)
 const Admin = mongoose.model('Admin', AdminSchema)
 const Salary = mongoose.model('Salary', SalarySchema)
 const Message = mongoose.model('Message', MessageSchema)
@@ -149,5 +167,5 @@ const AttendanceRegister = mongoose.model('AttendanceRegister', AttendanceRegist
 
 //export the above models to used in other files
 module.exports = {
-    Person, Salary, Message, AttendanceRegister, Location,Admin
+    Guard, Salary, Message, AttendanceRegister, Location,Admin
 }
