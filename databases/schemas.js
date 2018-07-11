@@ -27,7 +27,7 @@ const GuardSchema = new Schema({
         type: String,
         unique: [true, "email already exists"],
     },
-    surname_name: {
+    surname: {
         type: String,
     },
     first_name: {
@@ -55,7 +55,7 @@ const GuardSchema = new Schema({
         required: [true, 'nationalID is a required field']
     },
     profile_picture: String,
-    address: String,
+    postal_address: String,
     cellphone: Number,
     location: {
         type: Schema.Types.ObjectId,
@@ -63,9 +63,7 @@ const GuardSchema = new Schema({
     },
     timestamp: Date,
     employment_date: Date,
-
-
-})
+     })
 const AdminSchema = new Schema({
     email: {
         type: String,

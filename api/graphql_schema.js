@@ -113,6 +113,8 @@ const GuardType = new GraphQLObjectType({
         dob: {type: GraphQLString},
         gender: {type: GraphQLString},
         password: {type: GraphQLString},
+        postal_address: {type: GraphQLString},
+        cellphone: {type: GraphQLInt},
         nationalID: {type: GraphQLInt},
         employment_date: {type: GraphQLString},
         location: {type: GraphQLString},
@@ -407,7 +409,7 @@ const RootQuery = new GraphQLObjectType({
             }
         },
         findPodcastComments: {
-            type:new GraphQLList(CommentType),
+            type: new GraphQLList(CommentType),
             args: {podcast_id: {type: GraphQLID}},
             async resolve(parent, args) {
                 return await queries.findPodcastComments(args.podcast_id)
@@ -497,7 +499,7 @@ const Mutation = new GraphQLObjectType({
                 })
             }
         },
-        registerGuardPersonalDetails: {
+        registerGuard: {
             type: GuardType,
             args: {
                 guard_id: {type: GraphQLInt},
@@ -506,14 +508,22 @@ const Mutation = new GraphQLObjectType({
                 last_name: {type: GraphQLString},
                 dob: {type: GraphQLString},
                 gender: {type: GraphQLString},
-                password: {type: GraphQLString},
                 nationalID: {type: GraphQLInt},
                 employment_date: {type: GraphQLString},
+                password: {type: GraphQLString},
+                email: {type: GraphQLString},
+                cellphone: {type: GraphQLInt},
+                postal_address: {type: GraphQLString},
+                location: {type: GraphQLID},
+                gross: {type: GraphQLInt},
+                paye: {type: GraphQLInt},
+                nssf: {type: GraphQLInt},
+                nhif: {type: GraphQLInt},
+                loans: {type: GraphQLInt},
+                others: {type: GraphQLInt},
             },
             async resolve(parent, args, ctx) {
-                return await queries.registerGuardPersonalDetails(args).then(guard => {
-                    return guard
-                })
+                return await queries.registerGuard(args)
             }
         },
         addLocation: {

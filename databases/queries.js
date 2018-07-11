@@ -3,7 +3,7 @@
  */
 
 "use strict"
-const {Guard, Salary, Message, AttendanceRegister, Location,Admin} = require('./schemas')//import various models
+const {Guard, Salary, Message, AttendanceRegister, Location, Admin} = require('./schemas')//import various models
 const mongoose = require('mongoose')//import mongoose library
 const bcrypt = require('bcrypt')//import bcrypt to assist hashing passwords
 //Connect to Mongodb
@@ -152,21 +152,43 @@ const queries = {
                 }, {$push: {podcasts: podcast._id}},{upsert:true}).exec()
      })
      */
-    registerGuardContactDetails: async function (userInfo) {
+    registerGuard: async function (userInfo) {
         return await new Guard({
             guard_id: userInfo.guard_id,
+            email: userInfo.email,
             surname: userInfo.surname,
             first_name: userInfo.first_name,
             last_name: userInfo.last_name,
+            password: bcrypt.hashSync(userInfo.password, 10),
             dob: userInfo.dob,
             gender: userInfo.gender,
             nationalID: userInfo.nationalID,
-            employment_date: userInfo.employment_date,
-            password: bcrypt.hashSync(userInfo.password, 10),
-            email: userInfo.email,
             profile_picture: 'default.jpg',
-            date_joined: new Date()
-        }).save()
+            postal_address: userInfo.postal_address,
+            cellphone: userInfo.cellphone,
+            location: userInfo.location,
+            timestamp: new Date(),
+            employment_date: userInfo.employment_date,
+        }).save().then(guard => {
+            new Salary({
+                employee: guard._id,
+                gross_salary: userInfo.gross,
+                deductions: [{
+                    name: 'nssf',
+                    amount: userInfo.nssf
+                }, {
+                    name: 'nhif',
+                    amount: userInfo.nhif
+                }, {
+                    name: 'loans',
+                    amount: userInfo.loans
+                }, {
+                    name: 'others',
+                    amount: userInfo.others
+                },]
+            }).save()
+            return guard
+        })
     },
     addLocation: async function (location) {
         return await new Location({
@@ -238,11 +260,11 @@ const queries = {
     }
     ,
     findAllHosts: async function () {
-        return await Guard.find({role:'host'}).exec()
-    } ,
+        return await Guard.find({role: 'host'}).exec()
+    },
     findAllLocations: async function () {
         return await Location.find().exec()
-    } ,
+    },
 
     findAllGuards: async function () {
         return await Guard.find({}).exec()
@@ -289,10 +311,10 @@ const queries = {
     findPodcastCoverImage: async function (args) {
         return await Podcast.findById(args._id).select('coverImage').exec()
     },
-    findAllTags:async function(){
+    findAllTags: async function () {
         return await Tag.find({}).exec()
     },
-    findTaggedPodcasts:async function(tag_id){
+    findTaggedPodcasts: async function (tag_id) {
         return await Tag.findById(tag_id).select("podcasts").exec()
     }
 }
