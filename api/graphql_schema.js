@@ -440,8 +440,14 @@ const RootQuery = new GraphQLObjectType({
                 })
 
             }
+        },
+        findGuardsInLocation: {
+            type: new GraphQLList(GuardType),
+            args: {id: {type: GraphQLID}},
+            async resolve(parent, args, ctx) {
+               return await queries.findGuardsInLocation(args.id)
+            }
         }
-
     }
 })
 const Mutation = new GraphQLObjectType({

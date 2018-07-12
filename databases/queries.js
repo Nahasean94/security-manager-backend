@@ -253,8 +253,10 @@ const queries = {
     ,
     findGuards: async function () {
         return await Guard.find({}).exec()
-    }
-    ,
+    } ,
+    findGuardsInLocation: async function (location_id) {
+        return await Guard.find({location:location_id}).exec()
+    },
     findAllPodcasts: async function () {
         return await Podcast.find({}).sort({timestamp: -1}).exec()
     }
