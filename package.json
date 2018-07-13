@@ -10,6 +10,7 @@
     "generator-koa": "^0.2.0",
     "graphql": "^0.11.7",
     "graphql-tools": "^2.24.0",
+    "graphql-type-long": "^0.1.1",
     "grunt": "^1.0.2",
     "jsonwebtoken": "^8.2.1",
     "koa": "^2.5.0",

@@ -63,7 +63,7 @@ const GuardSchema = new Schema({
     },
     timestamp: Date,
     employment_date: Date,
-     })
+})
 const AdminSchema = new Schema({
     email: {
         type: String,
@@ -78,22 +78,22 @@ const AdminSchema = new Schema({
 
 })
 const SalarySchema = new Schema({
-    employee: {
+    guard_id: {
         type: Schema.Types.ObjectId,
         ref: 'Guard',
-        required: [true, 'employee_id is required']
+        required: [true, 'guard_id is required']
     },
     gross_salary: {
         type: Number,
-        required: [true, "how much is this employee being paid?"]
+        required: [true, "how much is this guard being paid?"]
     },
     deductions: [{
         name: String,
         amount: Number
     }],
-    payment: {
+    contract: {
         type: String,
-        required: [true, "is this a daily, weekly or monthly paid employee?"],
+        required: [true, "is this a daily, weekly or monthly paid guard?"],
         enum: ['month', 'week', 'day'],
         default: 'month'
     },
@@ -104,19 +104,17 @@ const SalarySchema = new Schema({
     }]
 })
 const AttendanceRegisterSchema = new Schema({
-    employee_id: {
-        type: Schema.Types.ObjectId,
-        ref: 'Guard',
-        required: [true, 'employee_id is required']
+    guard_id: {
+        type: Number,
+        required: [true, "guard_id is a required field"]
     },
     signin: {
-        type: Number,
-        required: [true, "how much is this employee being paid?"]
+        type: Date,
+        required: [true, "what time did the guard sign in?"]
     },
-    signout: [{
-        name: String,
-        amount: Number
-    }],
+    signout: {
+        type: Date,
+    },
     date: {
         type: Date,
         required: [true, "date is a required field"]
@@ -135,13 +133,13 @@ const MessageSchema = new Schema({
     author: {
         type: Schema.Types.ObjectId,
         ref: 'Guard',
-        required: [true, 'employee_id is required']
+        required: [true, 'author required']
     },
     replies: [{
         author: {
             type: Schema.Types.ObjectId,
             ref: 'Guard',
-            required: [true, 'employee_id is required']
+            required: [true, 'author is required']
         },
         body: {
             type: String,
@@ -165,5 +163,5 @@ const AttendanceRegister = mongoose.model('AttendanceRegister', AttendanceRegist
 
 //export the above models to used in other files
 module.exports = {
-    Guard, Salary, Message, AttendanceRegister, Location,Admin
+    Guard, Salary, Message, AttendanceRegister, Location, Admin
 }
