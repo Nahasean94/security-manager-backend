@@ -311,6 +311,7 @@ const Mutation = new GraphQLObjectType({
             type: AttendanceRegister,
             args: {
                 guard_id: {type: GraphQLInt},
+                signout: {type: GraphQLString},
                 date: {type: GraphQLString},
             },
             async resolve(parent, args, ctx) {
