@@ -80,7 +80,7 @@ const queries = {
             employment_date: userInfo.employment_date,
         }).save().then(guard => {
             new Salary({
-                guard_id: guard._id,
+                guard_id: guard.guard_id,
                 contract: userInfo.contract,
                 gross_salary: userInfo.gross,
                 deductions: [{
@@ -114,12 +114,30 @@ const queries = {
         }).save()
     },
     signout: async function (register) {
-        return await AttendanceRegister.findOneAndUpdate({
+        const attendance = await AttendanceRegister.findOneAndUpdate({
             guard_id: register.guard_id,
             date: register.date,
-        },{
-            signout:register.signout
-        }).exec()
+        }, {
+            signout: register.signout
+        }, {new: true}).exec()
+
+        //todo do calculations for hourly rates
+        const salary = await Salary.findOne({guard_id: register.guard_id}).exec()
+        if (salary.contract === 'day') {
+            const accountSid = 'AC7eea5ad0c0793fd647c6d7a596740fbc'
+            const authToken = '055e40e06dda72b7d70b343f0fb0d133\n'
+            const client = require('twilio')(accountSid, authToken)
+            const message = `Guard ID: ${register.guard_id}, Salary for the day: KES ${salary.gross_salary}`
+            client.messages
+                .create({
+                    body: message,
+                    from: '+14159095176',
+                    to: '+254705031577'
+                })
+                .then(message => console.log(message.sid))
+                .done()
+        }
+        return attendance
     },
     storeProfilePicture: async function (path, uploader) {
         return await Guard.findOneAndUpdate({
@@ -128,9 +146,9 @@ const queries = {
     },
     findGuards: async function () {
         return await Guard.find({}).exec()
-    } ,
+    },
     findGuardsInLocation: async function (location_id) {
-        return await Guard.find({location:location_id}).exec()
+        return await Guard.find({location: location_id}).exec()
     },
     findAllLocations: async function () {
         return await Location.find().exec()
@@ -148,5 +166,5 @@ const queries = {
     isLocationExists: async function (args) {
         return await Location.findOne({name: args.name}).exec()
     },
-   }
+}
 module.exports = queries

@@ -79,8 +79,7 @@ const AdminSchema = new Schema({
 })
 const SalarySchema = new Schema({
     guard_id: {
-        type: Schema.Types.ObjectId,
-        ref: 'Guard',
+        type: Number,
         required: [true, 'guard_id is required']
     },
     gross_salary: {
