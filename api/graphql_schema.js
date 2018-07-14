@@ -90,25 +90,68 @@ const LocationType = new GraphQLObjectType({
         timestamp: {type: GraphQLString},
     })
 })
-const CommentRepliesType = new GraphQLObjectType({
-    name: 'CommentReplies',
+const MessageType = new GraphQLObjectType({
+    name: 'Message',
     fields: () => ({
         id: {type: GraphQLID},
-        name: {type: GraphQLString},
+        type: {type: GraphQLString},
         author: {
-            type: AdminType,
-            resolve(parent, args) {
-
+            type: AuthorType,
+            async resolve(parent, args) {
+                if (parent.author.account === 'guard') {
+                    return await queries.findGuardByGuardId(parent.author.id).then(guard => {
+                        return {
+                            username: `${guard.first_name} ${guard.last_name}`,
+                            profile_picture: guard.profile_picture
+                        }
+                    })
+                } else if (parent.author.account === 'admin') {
+                    return {
+                        username: 'Administrator',
+                        profile_picture: 'default.jpg'
+                    }
+                }
             }
         },
         body: {type: GraphQLString},
-        likes: {
-            type: new GraphQLList(LikeType),
-            resolve(parent, args) {
-
-            }
+        message_type: {type: GraphQLString},
+        replies: {
+            type: new GraphQLList(MessageReplies)
         },
         timestamp: {type: GraphQLString},
+    })
+})
+const MessageReplies = new GraphQLObjectType({
+    name: 'MessageReplies',
+    fields: () => ({
+        id:{type:GraphQLID},
+        author: {
+            type: AuthorType,
+            async resolve(parent, args) {
+                if (parent.author.account === 'guard') {
+                    return await queries.findGuardByGuardId(parent.author.id).then(guard => {
+                        return {
+                            username: `${guard.first_name} ${guard.last_name}`,
+                            profile_picture: guard.profile_picture
+                        }
+                    })
+                } else if (parent.author.account === 'admin') {
+                    return {
+                        username: 'Administrator',
+                        profile_picture: 'default.jpg'
+                    }
+                }
+            }
+        },
+        body: {type: GraphQLString},
+        timestamp: {type: GraphQLString},
+    })
+})
+const AuthorType = new GraphQLObjectType({
+    name: 'Author',
+    fields: () => ({
+        username: {type: GraphQLString},
+        profile_picture: {type: GraphQLString},
     })
 })
 const AttendanceRegister = new GraphQLObjectType({
@@ -170,7 +213,7 @@ const RootQuery = new GraphQLObjectType({
             async resolve(parent, args, ctx) {
                 return await queries.findGuardsInLocation(args.id)
             }
-        }
+        },
     }
 })
 const Mutation = new GraphQLObjectType({
@@ -318,6 +361,18 @@ const Mutation = new GraphQLObjectType({
                 return await queries.signout(args)
             }
 
+        },
+        newMessage: {
+            type: MessageType,
+            args: {
+                author: {type:GraphQLString},
+                message_type: {type: GraphQLString},
+                body: {type: GraphQLString},
+                account_type: {type: GraphQLString},
+            },
+            async resolve(parent, args, ctx) {
+                return await queries.newMessage(args)
+            }
         }
     },
 

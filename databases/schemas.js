@@ -130,15 +130,26 @@ const LocationSchema = new Schema({
 })
 const MessageSchema = new Schema({
     author: {
-        type: Schema.Types.ObjectId,
-        ref: 'Guard',
-        required: [true, 'author required']
+        account:{
+            type:String,
+            enum:['guard','admin'],
+        },
+        id: String,
     },
+    message_type:{
+        type: String,
+        required: [true, "What type of message is this?"],
+        enum: ['leave', 'retire']
+    },
+    body:String,
+    timestamp: Date,
     replies: [{
         author: {
-            type: Schema.Types.ObjectId,
-            ref: 'Guard',
-            required: [true, 'author is required']
+            account:{
+                type:String,
+                enum:['guard','admin'],
+            },
+            id: String,
         },
         body: {
             type: String,
@@ -146,7 +157,7 @@ const MessageSchema = new Schema({
         },
         timestamp: Date
     }],
-    timestamp: Date
+
 })
 
 /**

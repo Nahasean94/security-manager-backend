@@ -144,8 +144,14 @@ const queries = {
             _id: uploader,
         }, {profile_picture: path}).exec()
     },
-    findGuards: async function () {
-        return await Guard.find({}).exec()
+    newMessage: async function (message) {
+        return await new Message({
+            "author.account": message.account_type,
+            "author.id": message.author,
+            body: message.body,
+            message_type: message.message_type,
+            timestamp: new Date(),
+        }).save()
     },
     findGuardsInLocation: async function (location_id) {
         return await Guard.find({location: location_id}).exec()
@@ -159,6 +165,9 @@ const queries = {
     },
     findGuard: async function (args) {
         return await Guard.findById(args.id).exec()
+    },
+    findGuardByGuardId: async function (guard_id) {
+        return await Guard.findOne({guard_id: guard_id}).exec()
     },
     isGuardExists: async function (args) {
         return await Guard.findOne({email: args.email}).exec()

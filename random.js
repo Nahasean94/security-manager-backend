@@ -1,12 +1,25 @@
-const accountSid = 'AC7eea5ad0c0793fd647c6d7a596740fbc';
-const authToken = '055e40e06dda72b7d70b343f0fb0d133\n';
-const client = require('twilio')(accountSid, authToken);
-
-client.messages
-    .create({
-        body: 'ljiioujoio',
-        from: '+14159095176',
-        to: '+254705031577'
+const MessageType = new GraphQLObjectType({
+    name: 'Message',
+    fields: () => ({
+        id:{type:GraphQLID},
+        author: {
+            type: AuthorType,
+            async resolve(parent, args) {
+                if (parent.author.account === 'guard') {
+                    return await queries.findEmployeeByEmployeeId(parent.author.id).then(guard => {
+                        return {
+                            username: `${guard.first_name} ${guard.last_name}`,
+                            profile_picture: guard.profile_picture
+                        }
+                    })
+                } else if (parent.author.account === 'admin') {
+                    return {
+                        username: 'Administrator',
+                        profile_picture: 'default.jpg'
+                    }
+                }
+            }
+        },
+    //other fields
     })
-    .then(message => console.log(message.sid))
-    .done()
+})

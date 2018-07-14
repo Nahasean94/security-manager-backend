@@ -41,7 +41,7 @@ const {apolloUploadKoa} = require('apollo-upload-server')
 
 const app = new Koa()
 const router = new Router()
-app.use(serve({rootDir: 'public', path: '/public'}))
+// app.use(serve({rootDir: 'public', path: '/public'}))
 
 // koaBody is needed just for POST.
 router.post('/graphql', koaBody(), apolloUploadKoa(),
