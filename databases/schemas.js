@@ -128,7 +128,7 @@ const LocationSchema = new Schema({
     },
     timestamp: Date
 })
-const MessageSchema = new Schema({
+const LeaveSchema = new Schema({
     author: {
         account:{
             type:String,
@@ -159,6 +159,19 @@ const MessageSchema = new Schema({
     }],
 
 })
+const ReportSchema = new Schema({
+    guard_id: {
+        type: Number,
+        required: [true, "guard_id is a required field"],
+    },
+    report:{
+        type: String,
+        required: [true, "Report is a required field"],
+    },
+    timestamp: Date,
+})
+
+
 
 /**
  *
@@ -167,11 +180,12 @@ const MessageSchema = new Schema({
 const Guard = mongoose.model('Guard', GuardSchema)
 const Admin = mongoose.model('Admin', AdminSchema)
 const Salary = mongoose.model('Salary', SalarySchema)
-const Message = mongoose.model('Message', MessageSchema)
+const LeaveRequest = mongoose.model('LeaveRequest', LeaveSchema)
 const Location = mongoose.model('Location', LocationSchema)
 const AttendanceRegister = mongoose.model('AttendanceRegister', AttendanceRegisterSchema)
+const Report = mongoose.model('Report', ReportSchema)
 
 //export the above models to used in other files
 module.exports = {
-    Guard, Salary, Message, AttendanceRegister, Location, Admin
+    Guard, Salary, Report,LeaveRequest, AttendanceRegister, Location, Admin
 }
