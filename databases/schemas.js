@@ -136,11 +136,6 @@ const LeaveSchema = new Schema({
         },
         id: String,
     },
-    message_type:{
-        type: String,
-        required: [true, "What type of message is this?"],
-        enum: ['leave', 'retire']
-    },
     body:String,
     timestamp: Date,
     replies: [{

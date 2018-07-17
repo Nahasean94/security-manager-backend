@@ -3,7 +3,7 @@
  */
 
 "use strict"
-const {Guard, Salary, LeaveRequest, AttendanceRegister, Location, Admin,Report} = require('./schemas')//import various models
+const {Guard, Salary, LeaveRequest, AttendanceRegister, Location, Admin, Report} = require('./schemas')//import various models
 const mongoose = require('mongoose')//import mongoose library
 const bcrypt = require('bcrypt')//import bcrypt to assist hashing passwords
 //Connect to Mongodb
@@ -149,7 +149,6 @@ const queries = {
             "author.account": message.account_type,
             "author.id": message.author,
             body: message.body,
-            message_type: message.message_type,
             timestamp: new Date(),
         }).save()
     },
@@ -174,10 +173,15 @@ const queries = {
     },
     newReport: async function (report) {
         return await new Report({
-            guard_id:report.guard_id,
-            report:report.report,
-            timestamp:new Date(),
+            guard_id: report.guard_id,
+            report: report.report,
+            timestamp: new Date(),
         }).save()
+    },
+    getInbox: async function (guard_id) {
+        return await LeaveRequest.find({
+            "author.id": guard_id,
+        }).sort({timestamp:-1}).exec()
     },
     isLocationExists: async function (args) {
         return await Location.findOne({name: args.name}).exec()

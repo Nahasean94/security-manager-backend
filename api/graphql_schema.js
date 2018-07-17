@@ -11,6 +11,7 @@ const authentication = require('./middleware/authenticate')//this module helps u
 const fs = require('fs')//this will help us create and manipulate the file system
 const mkdirp = require('mkdirp')//will help use create new folders
 const shortid = require('shortid')//will help us name each upload uniquely
+const jsmediatags = require('jsmediatags')
 
 //Store the upload
 const storeFS = ({stream}, {filename}, id, uploader) => {
@@ -94,7 +95,6 @@ const LeaveType = new GraphQLObjectType({
     name: 'Leave',
     fields: () => ({
         id: {type: GraphQLID},
-        type: {type: GraphQLString},
         author: {
             type: AuthorType,
             async resolve(parent, args) {
@@ -114,7 +114,6 @@ const LeaveType = new GraphQLObjectType({
             }
         },
         body: {type: GraphQLString},
-        message_type: {type: GraphQLString},
         replies: {
             type: new GraphQLList(LeaveReplies)
         },
@@ -128,7 +127,7 @@ const ReportType = new GraphQLObjectType({
         guard_id: {
             type: GuardType,
             async resolve(parent, args) {
-                    return await queries.findGuardByGuardId(parent.guard_id)
+                return await queries.findGuardByGuardId(parent.guard_id)
             }
         },
         report: {type: GraphQLString},
@@ -138,7 +137,7 @@ const ReportType = new GraphQLObjectType({
 const LeaveReplies = new GraphQLObjectType({
     name: 'LeaveReplies',
     fields: () => ({
-        id:{type:GraphQLID},
+        id: {type: GraphQLID},
         author: {
             type: AuthorType,
             async resolve(parent, args) {
@@ -165,7 +164,8 @@ const AuthorType = new GraphQLObjectType({
     name: 'Author',
     fields: () => ({
         username: {type: GraphQLString},
-        profile_picture: {type: GraphQLString},
+        profile_picture: {
+            type: GraphQLString,},
     })
 })
 const AttendanceRegister = new GraphQLObjectType({
@@ -192,7 +192,7 @@ const ExistsType = new GraphQLObjectType({
         exists: {type: GraphQLBoolean},
     })
 })
-const UpdloadProfilePictureType = new GraphQLObjectType({
+const UploadProfilePictureType = new GraphQLObjectType({
     name: 'UpdloadProfilePicture',
     fields: () => ({
         uploaded: {type: GraphQLBoolean},
@@ -226,6 +226,13 @@ const RootQuery = new GraphQLObjectType({
             args: {id: {type: GraphQLID}},
             async resolve(parent, args, ctx) {
                 return await queries.findGuardsInLocation(args.id)
+            }
+        },
+        getInbox: {
+            type: new GraphQLList(LeaveType),
+            args: {guard_id: {type: GraphQLString}},
+            resolve(parent, args) {
+                return queries.getInbox(args.guard_id)
             }
         },
     }
@@ -342,7 +349,7 @@ const Mutation = new GraphQLObjectType({
             }
         },
         uploadProfilePicture: {
-            type: UpdloadProfilePictureType,
+            type: UploadProfilePictureType,
             args: {
                 file: {type: GraphQLUpload},
             },
@@ -378,8 +385,7 @@ const Mutation = new GraphQLObjectType({
         newLeaveRequest: {
             type: LeaveType,
             args: {
-                author: {type:GraphQLString},
-                message_type: {type: GraphQLString},
+                author: {type: GraphQLString},
                 body: {type: GraphQLString},
                 account_type: {type: GraphQLString},
             },
@@ -387,10 +393,10 @@ const Mutation = new GraphQLObjectType({
                 return await queries.newLeaveRequest(args)
             }
         },
-    newReport: {
+        newReport: {
             type: ReportType,
             args: {
-                guard_id: {type:GraphQLInt},
+                guard_id: {type: GraphQLInt},
                 report: {type: GraphQLString},
             },
             async resolve(parent, args, ctx) {
