@@ -91,8 +91,8 @@ const LocationType = new GraphQLObjectType({
         timestamp: {type: GraphQLString},
     })
 })
-const LeaveType = new GraphQLObjectType({
-    name: 'Leave',
+const MessageType = new GraphQLObjectType({
+    name: 'Message',
     fields: () => ({
         id: {type: GraphQLID},
         author: {
@@ -115,27 +115,29 @@ const LeaveType = new GraphQLObjectType({
         },
         body: {type: GraphQLString},
         replies: {
-            type: new GraphQLList(LeaveReplies)
+            type: new GraphQLList(MessageReplies)
         },
         timestamp: {type: GraphQLString},
+        approved: {type: GraphQLBoolean},
+        message_type:{type: GraphQLString}
     })
 })
-const ReportType = new GraphQLObjectType({
-    name: 'Report',
-    fields: () => ({
-        id: {type: GraphQLID},
-        guard_id: {
-            type: GuardType,
-            async resolve(parent, args) {
-                return await queries.findGuardByGuardId(parent.guard_id)
-            }
-        },
-        report: {type: GraphQLString},
-        timestamp: {type: GraphQLString},
-    })
-})
-const LeaveReplies = new GraphQLObjectType({
-    name: 'LeaveReplies',
+// const ReportType = new GraphQLObjectType({
+//     name: 'Report',
+//     fields: () => ({
+//         id: {type: GraphQLID},
+//         guard_id: {
+//             type: GuardType,
+//             async resolve(parent, args) {
+//                 return await queries.findGuardByGuardId(parent.guard_id)
+//             }
+//         },
+//         report: {type: GraphQLString},
+//         timestamp: {type: GraphQLString},
+//     })
+// })
+const MessageReplies = new GraphQLObjectType({
+    name: 'MessageReplies',
     fields: () => ({
         id: {type: GraphQLID},
         author: {
@@ -229,17 +231,17 @@ const RootQuery = new GraphQLObjectType({
             }
         },
         getInbox: {
-            type: new GraphQLList(LeaveType),
+            type: new GraphQLList(MessageType),
             args: {guard_id: {type: GraphQLString}},
             resolve(parent, args) {
                 return queries.getInbox(args.guard_id)
             }
         },
-        getLeaveRequest: {
-            type:LeaveType,
+        getMessage: {
+            type:MessageType,
             args: {id: {type: GraphQLID}},
             resolve(parent, args) {
-                return queries.getLeaveRequest(args.id)
+                return queries.getMessage(args.id)
             }
         },
     }
@@ -389,39 +391,40 @@ const Mutation = new GraphQLObjectType({
                 return await queries.signout(args)
             }
         },
-        newLeaveRequest: {
-            type: LeaveType,
+        newMessage: {
+            type: MessageType,
             args: {
                 author: {type: GraphQLString},
                 body: {type: GraphQLString},
                 account_type: {type: GraphQLString},
+                message_type:{type:GraphQLString},
             },
             async resolve(parent, args, ctx) {
-                return await queries.newLeaveRequest(args)
+                return await queries.newMessage(args)
             }
         },
-        newLeaveReply: {
-            type: LeaveReplies,
+        newMessageReply: {
+            type: MessageReplies,
             args: {
-                leaveRequest: {type: GraphQLID},
+                message: {type: GraphQLID},
                 author: {type: GraphQLString},
                 account: {type: GraphQLString},
                 body: {type: GraphQLString},
             },
             async resolve(parent, args, ctx) {
-                return await queries.newLeaveReply(args)
+                return await queries.newMessageReply(args)
             }
         },
-        newReport: {
-            type: ReportType,
-            args: {
-                guard_id: {type: GraphQLInt},
-                report: {type: GraphQLString},
-            },
-            async resolve(parent, args, ctx) {
-                return await queries.newReport(args)
-            }
-        },
+        // newReport: {
+        //     type: ReportType,
+        //     args: {
+        //         guard_id: {type: GraphQLInt},
+        //         report: {type: GraphQLString},
+        //     },
+        //     async resolve(parent, args, ctx) {
+        //         return await queries.newReport(args)
+        //     }
+        // },
     },
 
 })

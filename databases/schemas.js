@@ -128,21 +128,25 @@ const LocationSchema = new Schema({
     },
     timestamp: Date
 })
-const LeaveSchema = new Schema({
+const MessageSchema = new Schema({
     author: {
-        account:{
-            type:String,
-            enum:['guard','admin'],
+        account: {
+            type: String,
+            enum: ['guard', 'admin'],
         },
         id: String,
     },
-    body:String,
+    message_type:{
+        type:String,
+        enum:['report','leave']
+    },
+    body: String,
     timestamp: Date,
     replies: [{
         author: {
-            account:{
-                type:String,
-                enum:['guard','admin'],
+            account: {
+                type: String,
+                enum: ['guard', 'admin'],
             },
             id: String,
         },
@@ -152,20 +156,37 @@ const LeaveSchema = new Schema({
         },
         timestamp: Date
     }],
-
+    approved: {
+        type: Boolean,
+        default: false
+    }
 })
-const ReportSchema = new Schema({
-    guard_id: {
-        type: Number,
-        required: [true, "guard_id is a required field"],
-    },
-    report:{
-        type: String,
-        required: [true, "Report is a required field"],
-    },
-    timestamp: Date,
-})
-
+// const ReportSchema = new Schema({
+//     guard_id: {
+//         type: Number,
+//         required: [true, "guard_id is a required field"],
+//     },
+//     report: {
+//         type: String,
+//         required: [true, "Report is a required field"],
+//     },
+//     timestamp: Date,
+//     replies: [{
+//         author: {
+//             account: {
+//                 type: String,
+//                 enum: ['guard', 'admin'],
+//             },
+//             id: String,
+//         },
+//         body: {
+//             type: String,
+//             required: ['body must not be empty']
+//         },
+//         timestamp: Date
+//     }],
+//
+// })
 
 
 /**
@@ -175,12 +196,12 @@ const ReportSchema = new Schema({
 const Guard = mongoose.model('Guard', GuardSchema)
 const Admin = mongoose.model('Admin', AdminSchema)
 const Salary = mongoose.model('Salary', SalarySchema)
-const LeaveRequest = mongoose.model('LeaveRequest', LeaveSchema)
+const Message = mongoose.model('Message', MessageSchema)
 const Location = mongoose.model('Location', LocationSchema)
 const AttendanceRegister = mongoose.model('AttendanceRegister', AttendanceRegisterSchema)
-const Report = mongoose.model('Report', ReportSchema)
+// const Report = mongoose.model('Report', ReportSchema)
 
 //export the above models to used in other files
 module.exports = {
-    Guard, Salary, Report,LeaveRequest, AttendanceRegister, Location, Admin
+    Guard, Salary, Message, AttendanceRegister, Location, Admin
 }

@@ -3,7 +3,7 @@
  */
 
 "use strict"
-const {Guard, Salary, LeaveRequest, AttendanceRegister, Location, Admin, Report} = require('./schemas')//import various models
+const {Guard, Salary, Message, AttendanceRegister, Location, Admin,} = require('./schemas')//import various models
 const mongoose = require('mongoose')//import mongoose library
 const bcrypt = require('bcrypt')//import bcrypt to assist hashing passwords
 //Connect to Mongodb
@@ -144,17 +144,18 @@ const queries = {
             _id: uploader,
         }, {profile_picture: path}).exec()
     },
-    newLeaveRequest: async function (message) {
-        return await new LeaveRequest({
+    newMessage: async function (message) {
+        return await new Message({
             "author.account": message.account_type,
             "author.id": message.author,
             body: message.body,
             timestamp: new Date(),
+            message_type:message.message_type
         }).save()
     },
-    newLeaveReply: async function ( message) {
-        return await LeaveRequest.findOneAndUpdate({
-            _id: message.leaveRequest,
+    newMessageReply: async function ( message) {
+        return await Message.findOneAndUpdate({
+            _id: message.message,
         }, {
             $push: {
                 replies: {
@@ -185,20 +186,20 @@ const queries = {
     isGuardExists: async function (args) {
         return await Guard.findOne({email: args.email}).exec()
     },
-    newReport: async function (report) {
-        return await new Report({
-            guard_id: report.guard_id,
-            report: report.report,
-            timestamp: new Date(),
-        }).save()
-    },
+    // newReport: async function (report) {
+    //     return await new Report({
+    //         guard_id: report.guard_id,
+    //         report: report.report,
+    //         timestamp: new Date(),
+    //     }).save()
+    // },
     getInbox: async function (guard_id) {
-        return await LeaveRequest.find({
+        return await Message.find({
             "author.id": guard_id,
         }).sort({timestamp: -1}).exec()
     },
-    getLeaveRequest: async function (id) {
-        return await LeaveRequest.findById(id).exec()
+    getMessage: async function (id) {
+        return await Message.findById(id).exec()
     },
     isLocationExists: async function (args) {
         return await Location.findOne({name: args.name}).exec()
