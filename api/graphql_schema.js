@@ -80,7 +80,10 @@ const GuardType = new GraphQLObjectType({
         cellphone: {type: GraphQLLong},
         nationalID: {type: GraphQLInt},
         employment_date: {type: GraphQLString},
-        location: {type: GraphQLString},
+        location: {type: LocationType,
+        async resolve(parent,args){
+            return await queries.findLocation(parent.location)
+        }},
     })
 })
 const LocationType = new GraphQLObjectType({
@@ -91,6 +94,33 @@ const LocationType = new GraphQLObjectType({
         timestamp: {type: GraphQLString},
     })
 })
+const SalaryType=new GraphQLObjectType({
+    name: 'Salary',
+    fields: () => ({
+        id: {type: GraphQLID},
+        guard_id: {type: GraphQLInt},
+        contract: {type: GraphQLString},
+        deductions: {type: new GraphQLList(DeductionsType)},
+        transactions: {type: new GraphQLList(TransactionsType)},
+        gross_salary: {type: GraphQLInt},
+    })
+})
+const DeductionsType=new GraphQLObjectType({
+    name: 'Deductions',
+    fields: () => ({
+        name: {type: GraphQLString},
+        amount: {type: GraphQLInt},
+    })
+})
+const TransactionsType=new GraphQLObjectType({
+    name: 'Transactions',
+    fields: () => ({
+        timestamp: {type: GraphQLString},
+        amount: {type: GraphQLInt},
+        text: {type: GraphQLInt},
+    })
+})
+
 const MessageType = new GraphQLObjectType({
     name: 'Message',
     fields: () => ({
@@ -250,6 +280,27 @@ const RootQuery = new GraphQLObjectType({
             args: {guard_id: {type: GraphQLString}},
             resolve(parent, args) {
                 return queries.getGuardAttendance(args.guard_id)
+            }
+        },
+        getGuardInfo: {
+            type:GuardType,
+            args: {guard_id: {type: GraphQLString}},
+            resolve(parent, args) {
+                return queries.getGuardInfo(args.guard_id)
+            }
+        },
+        getGuardPaymentInfo: {
+            type:SalaryType,
+            args: {guard_id: {type: GraphQLString}},
+            resolve(parent, args) {
+                return queries.getGuardPaymentInfo(args.guard_id)
+            }
+        },
+        getGuardContactInfo: {
+            type:GuardType,
+            args: {guard_id: {type: GraphQLString}},
+            resolve(parent, args) {
+                return queries.getGuardContactInfo(args.guard_id)
             }
         },
     }

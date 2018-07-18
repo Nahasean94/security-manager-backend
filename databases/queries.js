@@ -183,6 +183,9 @@ const queries = {
     findAllLocations: async function () {
         return await Location.find().exec()
     },
+    findLocation: async function (id) {
+        return await Location.findById(id).exec()
+    },
 
     findAllGuards: async function () {
         return await Guard.find({}).exec()
@@ -213,6 +216,15 @@ const queries = {
     },
     getGuardAttendance: async function (guard_id) {
         return await AttendanceRegister.find({guard_id:guard_id}).sort({date:-1}).exec()
+    },
+    getGuardInfo: async function (guard_id) {
+        return await Guard.findOne({guard_id:guard_id}).exec()
+    },
+    getGuardContactInfo: async function (guard_id) {
+        return await Guard.findOne({guard_id:guard_id}).exec()
+    },
+    getGuardPaymentInfo: async function (guard_id) {
+        return await Salary.findOne({guard_id:guard_id}).exec()
     },
     isLocationExists: async function (args) {
         return await Location.findOne({name: args.name}).exec()
