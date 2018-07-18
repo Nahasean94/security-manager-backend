@@ -153,6 +153,16 @@ const queries = {
             message_type:message.message_type
         }).save()
     },
+    newCustomMessage: async function (message) {
+        return await new Message({
+            "author.account": message.account_type,
+            "author.id": message.author,
+            body: message.body,
+            timestamp: new Date(),
+            message_type:message.message_type,
+            title:message.title
+        }).save()
+    },
     newMessageReply: async function ( message) {
         return await Message.findOneAndUpdate({
             _id: message.message,

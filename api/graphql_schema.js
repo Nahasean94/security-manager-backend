@@ -119,7 +119,8 @@ const MessageType = new GraphQLObjectType({
         },
         timestamp: {type: GraphQLString},
         approved: {type: GraphQLBoolean},
-        message_type:{type: GraphQLString}
+        message_type:{type: GraphQLString},
+        title:{type: GraphQLString}
     })
 })
 // const ReportType = new GraphQLObjectType({
@@ -401,6 +402,19 @@ const Mutation = new GraphQLObjectType({
             },
             async resolve(parent, args, ctx) {
                 return await queries.newMessage(args)
+            }
+        },
+        newCustomMessage: {
+            type: MessageType,
+            args: {
+                author: {type: GraphQLString},
+                body: {type: GraphQLString},
+                account_type: {type: GraphQLString},
+                message_type:{type:GraphQLString},
+                title:{type:GraphQLString},
+            },
+            async resolve(parent, args, ctx) {
+                return await queries.newCustomMessage(args)
             }
         },
         newMessageReply: {

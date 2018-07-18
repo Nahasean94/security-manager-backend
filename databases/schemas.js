@@ -138,9 +138,10 @@ const MessageSchema = new Schema({
     },
     message_type:{
         type:String,
-        enum:['report','leave']
+        enum:['report','leave','custom']
     },
     body: String,
+    title: String,
     timestamp: Date,
     replies: [{
         author: {
