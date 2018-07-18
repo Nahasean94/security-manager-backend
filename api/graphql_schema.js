@@ -235,6 +235,13 @@ const RootQuery = new GraphQLObjectType({
                 return queries.getInbox(args.guard_id)
             }
         },
+        getLeaveRequest: {
+            type:LeaveType,
+            args: {id: {type: GraphQLID}},
+            resolve(parent, args) {
+                return queries.getLeaveRequest(args.id)
+            }
+        },
     }
 })
 const Mutation = new GraphQLObjectType({
@@ -391,6 +398,18 @@ const Mutation = new GraphQLObjectType({
             },
             async resolve(parent, args, ctx) {
                 return await queries.newLeaveRequest(args)
+            }
+        },
+        newLeaveReply: {
+            type: LeaveReplies,
+            args: {
+                leaveRequest: {type: GraphQLID},
+                author: {type: GraphQLString},
+                account: {type: GraphQLString},
+                body: {type: GraphQLString},
+            },
+            async resolve(parent, args, ctx) {
+                return await queries.newLeaveReply(args)
             }
         },
         newReport: {

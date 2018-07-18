@@ -152,6 +152,20 @@ const queries = {
             timestamp: new Date(),
         }).save()
     },
+    newLeaveReply: async function ( message) {
+        return await LeaveRequest.findOneAndUpdate({
+            _id: message.leaveRequest,
+        }, {
+            $push: {
+                replies: {
+                    "author.account": message.account,
+                    "author.id": message.author,
+                    body: message.body,
+                    timestamp: new Date(),
+                }
+            },
+        },{new:true}).exec()
+    },
     findGuardsInLocation: async function (location_id) {
         return await Guard.find({location: location_id}).exec()
     },
@@ -181,7 +195,10 @@ const queries = {
     getInbox: async function (guard_id) {
         return await LeaveRequest.find({
             "author.id": guard_id,
-        }).sort({timestamp:-1}).exec()
+        }).sort({timestamp: -1}).exec()
+    },
+    getLeaveRequest: async function (id) {
+        return await LeaveRequest.findById(id).exec()
     },
     isLocationExists: async function (args) {
         return await Location.findOne({name: args.name}).exec()
