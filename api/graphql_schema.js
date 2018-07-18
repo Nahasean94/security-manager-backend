@@ -178,7 +178,7 @@ const AttendanceRegister = new GraphQLObjectType({
         guard_id: {type: GraphQLInt},
         signin: {type: GraphQLString},
         signout: {type: GraphQLString},
-        date: {type: GraphQLString,},
+        date: {type: GraphQLString},
     })
 })
 const TokenType = new GraphQLObjectType({
@@ -243,6 +243,13 @@ const RootQuery = new GraphQLObjectType({
             args: {id: {type: GraphQLID}},
             resolve(parent, args) {
                 return queries.getMessage(args.id)
+            }
+        },
+        getGuardAttendance: {
+            type:new GraphQLList(AttendanceRegister),
+            args: {guard_id: {type: GraphQLString}},
+            resolve(parent, args) {
+                return queries.getGuardAttendance(args.guard_id)
             }
         },
     }

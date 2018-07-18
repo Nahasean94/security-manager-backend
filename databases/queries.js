@@ -211,6 +211,9 @@ const queries = {
     getMessage: async function (id) {
         return await Message.findById(id).exec()
     },
+    getGuardAttendance: async function (guard_id) {
+        return await AttendanceRegister.find({guard_id:guard_id}).sort({date:-1}).exec()
+    },
     isLocationExists: async function (args) {
         return await Location.findOne({name: args.name}).exec()
     },
