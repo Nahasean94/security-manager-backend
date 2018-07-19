@@ -436,6 +436,18 @@ const Mutation = new GraphQLObjectType({
                 return await queries.updateGuardBasicInfo(args)
             }
         },
+        updateGuardContactInfo: {
+            type: GuardType,
+            args: {
+                id: {type: GraphQLID},
+                email: {type: GraphQLString},
+                cellphone: {type: GraphQLLong},
+                postal_address: {type: GraphQLString},
+            },
+            async resolve(parent, args, ctx) {
+                return await queries.updateGuardContactInfo(args)
+            }
+        },
         addLocation: {
             type: LocationType,
             args: {

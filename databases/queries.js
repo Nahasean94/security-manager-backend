@@ -113,6 +113,14 @@ const queries = {
         },{new:true}).exec()
 
     },
+    updateGuardContactInfo: async function (userInfo) {
+        return await Guard.findByIdAndUpdate(userInfo.id,{
+            email: userInfo.email,
+            cellphone: userInfo.cellphone,
+            postal_address: userInfo.postal_address,
+        },{new:true}).exec()
+
+    },
     addLocation: async function (location) {
         return await new Location({
             name: location.name,
