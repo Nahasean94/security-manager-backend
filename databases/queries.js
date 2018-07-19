@@ -236,9 +236,13 @@ const queries = {
             "author.id": guard_id,
         }).sort({timestamp: -1}).exec()
     },
-    getAllInbox: async function (guard_id) {
+    getAllInbox: async function () {
         return await Message.find({}).sort({timestamp: -1}).exec()
     },
+    getAllGuards: async function () {
+        return await Guard.find({}).sort({timestamp: -1}).exec()
+    }
+    ,
     getMessage: async function (id) {
         return await Message.findById(id).exec()
     },

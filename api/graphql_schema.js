@@ -286,6 +286,12 @@ const RootQuery = new GraphQLObjectType({
                 return queries.getAllInbox()
             }
         },
+        getAllGuards: {
+            type: new GraphQLList(GuardType),
+            resolve(parent, args) {
+                return queries.getAllGuards()
+            }
+        },
         getMessage: {
             type: MessageType,
             args: {id: {type: GraphQLID}},
