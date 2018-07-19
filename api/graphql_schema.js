@@ -292,6 +292,12 @@ const RootQuery = new GraphQLObjectType({
                 return queries.getAllGuards()
             }
         },
+        getAllLocations: {
+            type: new GraphQLList(LocationType),
+            resolve(parent, args) {
+                return queries.getAllLocations()
+            }
+        },
         getMessage: {
             type: MessageType,
             args: {id: {type: GraphQLID}},
@@ -469,6 +475,16 @@ const Mutation = new GraphQLObjectType({
                 return await queries.addLocation(args).then(location => {
                     return location
                 })
+            }
+        },
+        updateLocation: {
+            type: LocationType,
+            args: {
+                id: {type: GraphQLID},
+                name: {type: GraphQLString},
+            },
+            async resolve(parent, args, ctx) {
+                return await queries.updateLocation(args)
             }
         },
 

@@ -127,6 +127,11 @@ const queries = {
             date_joined: new Date()
         }).save()
     },
+    updateLocation: async function (location) {
+        return await Location.findByIdAndUpdate(location.id,{
+            name: location.name,
+        }).exec()
+    },
     getPassword: async function (guard) {
         return await Guard.findById(guard).select('password').exec()
     },
@@ -241,6 +246,9 @@ const queries = {
     },
     getAllGuards: async function () {
         return await Guard.find({}).sort({timestamp: -1}).exec()
+    },
+    getAllLocations: async function () {
+        return await Location.find({}).sort({timestamp: -1}).exec()
     }
     ,
     getMessage: async function (id) {
