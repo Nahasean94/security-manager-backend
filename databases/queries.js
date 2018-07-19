@@ -252,10 +252,13 @@ const queries = {
     }
     ,
     getMessage: async function (id) {
-        return await Message.findById(id).exec()
+        return await Message.findById(id).sort({"replies.timestamp":-1}).exec()
     },
     getGuardAttendance: async function (guard_id) {
         return await AttendanceRegister.find({guard_id:guard_id}).sort({date:-1}).exec()
+    },
+    getAllGuardsAttendance: async function () {
+        return await AttendanceRegister.find({}).sort({date:-1}).exec()
     },
     getGuardInfo: async function (guard_id) {
         return await Guard.findOne({guard_id:guard_id}).exec()

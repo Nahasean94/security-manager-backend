@@ -312,6 +312,12 @@ const RootQuery = new GraphQLObjectType({
                 return queries.getGuardAttendance(args.guard_id)
             }
         },
+        getAllGuardsAttendance: {
+            type: new GraphQLList(AttendanceRegister),
+            resolve(parent, args) {
+                return queries.getAllGuardsAttendance()
+            }
+        },
         getGuardInfo: {
             type: GuardType,
             args: {guard_id: {type: GraphQLString}},
