@@ -100,11 +100,30 @@ const queries = {
             return guard
         })
     },
+    updateGuardBasicInfo: async function (userInfo) {
+        return await Guard.findByIdAndUpdate(userInfo.id,{
+            guard_id: userInfo.guard_id,
+            surname: userInfo.surname,
+            first_name: userInfo.first_name,
+            last_name: userInfo.last_name,
+            dob: userInfo.dob,
+            gender: userInfo.gender,
+            nationalID: userInfo.nationalID,
+            employment_date: userInfo.employment_date,
+        },{new:true}).exec()
+
+    },
     addLocation: async function (location) {
         return await new Location({
             name: location.name,
             date_joined: new Date()
         }).save()
+    },
+    getPassword: async function (guard) {
+        return await Guard.findById(guard).select('password').exec()
+    },
+    changePassword: async function (userInfo) {
+        return await Guard.findByIdAndUpdate(userInfo.guard,{ password: bcrypt.hashSync(userInfo.password, 10),},{new:true}).exec()
     },
     signin: async function (register) {
         return await new AttendanceRegister({
@@ -139,10 +158,8 @@ const queries = {
         }
         return attendance
     },
-    storeProfilePicture: async function (path, uploader) {
-        return await Guard.findOneAndUpdate({
-            _id: uploader,
-        }, {profile_picture: path}).exec()
+    storeProfilePicture: async function (path,guard) {
+        return await Guard.findByIdAndUpdate(guard, {profile_picture: path},{new:true}).exec()
     },
     newMessage: async function (message) {
         return await new Message({

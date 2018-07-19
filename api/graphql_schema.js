@@ -3,6 +3,8 @@
  * This file contains all the graphql queries and mutations. These are responsible for receiving and responding to requests from the front end.
  */
 
+const bcrypt = require("bcrypt")
+
 const queries = require('../databases/queries')
 const {GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList, GraphQLBoolean,} = require('graphql')//import various modules from graphql
 const {GraphQLUpload} = require('apollo-upload-server')//this module will help us upload files to the server
@@ -14,7 +16,7 @@ const shortid = require('shortid')//will help us name each upload uniquely
 const jsmediatags = require('jsmediatags')
 
 //Store the upload
-const storeFS = ({stream}, {filename}, id, uploader) => {
+const storeFS = ({stream,filename}, id, uploader) => {
     const uploadDir = `./public/uploads/${uploader}`
 
 // Ensure upload directory exists
@@ -80,10 +82,12 @@ const GuardType = new GraphQLObjectType({
         cellphone: {type: GraphQLLong},
         nationalID: {type: GraphQLInt},
         employment_date: {type: GraphQLString},
-        location: {type: LocationType,
-        async resolve(parent,args){
-            return await queries.findLocation(parent.location)
-        }},
+        location: {
+            type: LocationType,
+            async resolve(parent, args) {
+                return await queries.findLocation(parent.location)
+            }
+        },
     })
 })
 const LocationType = new GraphQLObjectType({
@@ -94,7 +98,7 @@ const LocationType = new GraphQLObjectType({
         timestamp: {type: GraphQLString},
     })
 })
-const SalaryType=new GraphQLObjectType({
+const SalaryType = new GraphQLObjectType({
     name: 'Salary',
     fields: () => ({
         id: {type: GraphQLID},
@@ -105,14 +109,14 @@ const SalaryType=new GraphQLObjectType({
         gross_salary: {type: GraphQLInt},
     })
 })
-const DeductionsType=new GraphQLObjectType({
+const DeductionsType = new GraphQLObjectType({
     name: 'Deductions',
     fields: () => ({
         name: {type: GraphQLString},
         amount: {type: GraphQLInt},
     })
 })
-const TransactionsType=new GraphQLObjectType({
+const TransactionsType = new GraphQLObjectType({
     name: 'Transactions',
     fields: () => ({
         timestamp: {type: GraphQLString},
@@ -120,7 +124,14 @@ const TransactionsType=new GraphQLObjectType({
         text: {type: GraphQLInt},
     })
 })
-
+const PasswordType = new GraphQLObjectType({
+    name: 'Password',
+    fields: () => ({
+        confirmed: {
+            type: GraphQLBoolean,
+        },
+    })
+})
 const MessageType = new GraphQLObjectType({
     name: 'Message',
     fields: () => ({
@@ -149,8 +160,8 @@ const MessageType = new GraphQLObjectType({
         },
         timestamp: {type: GraphQLString},
         approved: {type: GraphQLBoolean},
-        message_type:{type: GraphQLString},
-        title:{type: GraphQLString}
+        message_type: {type: GraphQLString},
+        title: {type: GraphQLString}
     })
 })
 // const ReportType = new GraphQLObjectType({
@@ -198,7 +209,8 @@ const AuthorType = new GraphQLObjectType({
     fields: () => ({
         username: {type: GraphQLString},
         profile_picture: {
-            type: GraphQLString,},
+            type: GraphQLString,
+        },
     })
 })
 const AttendanceRegister = new GraphQLObjectType({
@@ -269,38 +281,57 @@ const RootQuery = new GraphQLObjectType({
             }
         },
         getMessage: {
-            type:MessageType,
+            type: MessageType,
             args: {id: {type: GraphQLID}},
             resolve(parent, args) {
                 return queries.getMessage(args.id)
             }
         },
         getGuardAttendance: {
-            type:new GraphQLList(AttendanceRegister),
+            type: new GraphQLList(AttendanceRegister),
             args: {guard_id: {type: GraphQLString}},
             resolve(parent, args) {
                 return queries.getGuardAttendance(args.guard_id)
             }
         },
         getGuardInfo: {
-            type:GuardType,
+            type: GuardType,
             args: {guard_id: {type: GraphQLString}},
             resolve(parent, args) {
                 return queries.getGuardInfo(args.guard_id)
             }
         },
         getGuardPaymentInfo: {
-            type:SalaryType,
+            type: SalaryType,
             args: {guard_id: {type: GraphQLString}},
             resolve(parent, args) {
                 return queries.getGuardPaymentInfo(args.guard_id)
             }
         },
         getGuardContactInfo: {
-            type:GuardType,
+            type: GuardType,
             args: {guard_id: {type: GraphQLString}},
             resolve(parent, args) {
                 return queries.getGuardContactInfo(args.guard_id)
+            }
+        },
+        confirmPassword: {
+            type: PasswordType,
+            args: {
+                guard: {type: GraphQLID},
+                password: {type: GraphQLString}
+            },
+            async resolve(parent, args, ctx) {
+                return await queries.getPassword(args.guard).then(password => {
+                    if (bcrypt.compareSync(args.password, password.password)) {
+                        return {
+                            confirmed: true,
+                        }
+                    }
+                    return {
+                        confirmed: false,
+                    }
+                })
             }
         },
     }
@@ -388,6 +419,23 @@ const Mutation = new GraphQLObjectType({
                 return await queries.registerGuard(args)
             }
         },
+        updateGuardBasicInfo: {
+            type: GuardType,
+            args: {
+                id: {type: GraphQLID},
+                guard_id: {type: GraphQLString},
+                surname: {type: GraphQLString},
+                first_name: {type: GraphQLString},
+                last_name: {type: GraphQLString},
+                dob: {type: GraphQLString},
+                gender: {type: GraphQLString},
+                nationalID: {type: GraphQLInt},
+                employment_date: {type: GraphQLString}
+            },
+            async resolve(parent, args, ctx) {
+                return await queries.updateGuardBasicInfo(args)
+            }
+        },
         addLocation: {
             type: LocationType,
             args: {
@@ -399,31 +447,15 @@ const Mutation = new GraphQLObjectType({
                 })
             }
         },
-        updateProfile: {
-            type: AdminType,
-            args: {
-                id: {type: GraphQLID},
-                username: {type: GraphQLString},
-                email: {type: GraphQLString},
-                password: {type: GraphQLString},
-                role: {type: GraphQLString},
-            },
-            async resolve(parent, args, ctx) {
-                return await authentication.authenticate(ctx).then(async ({id}) => {
-                    return await queries.updateProfile(id, args).then(person => {
-                        return person
-                    })
-                })
-            }
-        },
+
         uploadProfilePicture: {
-            type: UploadProfilePictureType,
+            type: GuardType,
             args: {
+                guard: {type: GraphQLID},
                 file: {type: GraphQLUpload},
             },
             async resolve(parent, args, ctx) {
-                const {id} = await authentication.authenticate(ctx)
-                return !!(await processProfilePicture(args.file, id))
+                return await processProfilePicture(args.file, args.guard)
             }
 
         },
@@ -456,7 +488,7 @@ const Mutation = new GraphQLObjectType({
                 author: {type: GraphQLString},
                 body: {type: GraphQLString},
                 account_type: {type: GraphQLString},
-                message_type:{type:GraphQLString},
+                message_type: {type: GraphQLString},
             },
             async resolve(parent, args, ctx) {
                 return await queries.newMessage(args)
@@ -468,8 +500,8 @@ const Mutation = new GraphQLObjectType({
                 author: {type: GraphQLString},
                 body: {type: GraphQLString},
                 account_type: {type: GraphQLString},
-                message_type:{type:GraphQLString},
-                title:{type:GraphQLString},
+                message_type: {type: GraphQLString},
+                title: {type: GraphQLString},
             },
             async resolve(parent, args, ctx) {
                 return await queries.newCustomMessage(args)
@@ -487,16 +519,25 @@ const Mutation = new GraphQLObjectType({
                 return await queries.newMessageReply(args)
             }
         },
-        // newReport: {
-        //     type: ReportType,
-        //     args: {
-        //         guard_id: {type: GraphQLInt},
-        //         report: {type: GraphQLString},
-        //     },
-        //     async resolve(parent, args, ctx) {
-        //         return await queries.newReport(args)
-        //     }
-        // },
+        changePassword: {
+            type: PasswordType,
+            args: {
+                guard: {type: GraphQLID},
+                password: {type: GraphQLString}
+            },
+            async resolve(parent, args, ctx) {
+                return await queries.getPassword(args.guard).then(password => {
+                    if (bcrypt.compareSync(args.password, password.password)) {
+                        return {
+                            confirmed: true,
+                        }
+                    }
+                    return {
+                        confirmed: false,
+                    }
+                })
+            }
+        },
     },
 
 })
