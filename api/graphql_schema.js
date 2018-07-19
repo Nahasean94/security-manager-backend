@@ -280,6 +280,12 @@ const RootQuery = new GraphQLObjectType({
                 return queries.getInbox(args.guard_id)
             }
         },
+        getAllInbox: {
+            type: new GraphQLList(MessageType),
+            resolve(parent, args) {
+                return queries.getAllInbox()
+            }
+        },
         getMessage: {
             type: MessageType,
             args: {id: {type: GraphQLID}},
