@@ -138,6 +138,10 @@ const queries = {
     getAllSalaries: async function (guard) {
         return await Salary.find({}).exec()
     },
+    getPaymentForContract: async function (contract) {
+        return await SalaryBracket.find({contract:contract}).exec()
+    }
+    ,
     isSalaryBracketExists: async function (args) {
         return await SalaryBracket.findOne({amount: args.amount, contract: args.contract}).exec()
     },

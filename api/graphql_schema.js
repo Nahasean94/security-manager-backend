@@ -372,16 +372,25 @@ const RootQuery = new GraphQLObjectType({
                 return await queries.getAllSalaries()
             }
         },
+        getPaymentForContract: {
+            type: new GraphQLList(SalaryBracketType),
+            args: {contract: {type: GraphQLString}},
+            async resolve(parent, args, ctx) {
+                return await queries.getPaymentForContract(args.contract)
+            }
+        },
         isSalaryBracketExists: {
             type: ExistsType,
-            args: {amount: {type: GraphQLInt},
-                contract: {type: GraphQLString}},
+            args: {
+                amount: {type: GraphQLInt},
+                contract: {type: GraphQLString}
+            },
             async resolve(parent, args) {
-                return await queries.isSalaryBracketExists(args).then(salary=>{
-                    if(salary){
-                        return {exists:true}
+                return await queries.isSalaryBracketExists(args).then(salary => {
+                    if (salary) {
+                        return {exists: true}
                     }
-                    return {exists:false}
+                    return {exists: false}
                 })
             }
         }
@@ -405,8 +414,10 @@ const Mutation = new GraphQLObjectType({
         },
         addSalaryBracket: {
             type: SalaryBracketType,
-            args: {amount: {type: GraphQLInt},
-                contract: {type: GraphQLString}},
+            args: {
+                amount: {type: GraphQLInt},
+                contract: {type: GraphQLString}
+            },
             async resolve(parent, args) {
                 return await queries.addSalaryBracket(args)
             }
