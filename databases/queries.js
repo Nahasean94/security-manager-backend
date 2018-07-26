@@ -3,7 +3,7 @@
  */
 
 "use strict"
-const {Guard, Salary, Message, AttendanceRegister, Location, Admin,} = require('./schemas')//import various models
+const {Guard, Salary, Message, AttendanceRegister, Location, Admin, SalaryBracket} = require('./schemas')//import various models
 const mongoose = require('mongoose')//import mongoose library
 const bcrypt = require('bcrypt')//import bcrypt to assist hashing passwords
 //Connect to Mongodb
@@ -101,7 +101,7 @@ const queries = {
         })
     },
     updateGuardBasicInfo: async function (userInfo) {
-        return await Guard.findByIdAndUpdate(userInfo.id,{
+        return await Guard.findByIdAndUpdate(userInfo.id, {
             guard_id: userInfo.guard_id,
             surname: userInfo.surname,
             first_name: userInfo.first_name,
@@ -110,15 +110,15 @@ const queries = {
             gender: userInfo.gender,
             nationalID: userInfo.nationalID,
             employment_date: userInfo.employment_date,
-        },{new:true}).exec()
+        }, {new: true}).exec()
 
     },
     updateGuardContactInfo: async function (userInfo) {
-        return await Guard.findByIdAndUpdate(userInfo.id,{
+        return await Guard.findByIdAndUpdate(userInfo.id, {
             email: userInfo.email,
             cellphone: userInfo.cellphone,
             postal_address: userInfo.postal_address,
-        },{new:true}).exec()
+        }, {new: true}).exec()
 
     },
     addLocation: async function (location) {
@@ -128,15 +128,24 @@ const queries = {
         }).save()
     },
     updateLocation: async function (location) {
-        return await Location.findByIdAndUpdate(location.id,{
+        return await Location.findByIdAndUpdate(location.id, {
             name: location.name,
         }).exec()
     },
     getPassword: async function (guard) {
         return await Guard.findById(guard).select('password').exec()
     },
+    getAllSalaries: async function (guard) {
+        return await Salary.find({}).exec()
+    },
+    isSalaryBracketExists: async function (args) {
+        return await SalaryBracket.findOne({amount: args.amount, contract: args.contract}).exec()
+    },
+    addSalaryBracket: async function (args) {
+        return await new SalaryBracket({amount: args.amount, contract: args.contract}).save()
+    },
     changePassword: async function (userInfo) {
-        return await Guard.findByIdAndUpdate(userInfo.guard,{ password: bcrypt.hashSync(userInfo.password, 10),},{new:true}).exec()
+        return await Guard.findByIdAndUpdate(userInfo.guard, {password: bcrypt.hashSync(userInfo.password, 10),}, {new: true}).exec()
     },
     signin: async function (register) {
         return await new AttendanceRegister({
@@ -156,9 +165,17 @@ const queries = {
         //todo do calculations for hourly rates
         const salary = await Salary.findOne({guard_id: register.guard_id}).exec()
         if (salary.contract === 'day') {
+            let total_ductions = 0
+            salary.deductions.map(salo => {
+                total_ductions = total_ductions + salo.amount
+            })
+
             const accountSid = 'AC7eea5ad0c0793fd647c6d7a596740fbc'
             const authToken = '055e40e06dda72b7d70b343f0fb0d133\n'
             const client = require('twilio')(accountSid, authToken)
+            // const body=
+
+
             const message = `Guard ID: ${register.guard_id}, Salary for the day: KES ${salary.gross_salary}`
             client.messages
                 .create({
@@ -166,13 +183,15 @@ const queries = {
                     from: '+14159095176',
                     to: '+254705031577'
                 })
-                .then(message => console.log(message.sid))
+                .then(message => console.log(message.sid)).catch(err => {
+                console.log("Could not send the message. Check you network connection")
+            })
                 .done()
         }
         return attendance
     },
-    storeProfilePicture: async function (path,guard) {
-        return await Guard.findByIdAndUpdate(guard, {profile_picture: path},{new:true}).exec()
+    storeProfilePicture: async function (path, guard) {
+        return await Guard.findByIdAndUpdate(guard, {profile_picture: path}, {new: true}).exec()
     },
     newMessage: async function (message) {
         return await new Message({
@@ -180,7 +199,7 @@ const queries = {
             "author.id": message.author,
             body: message.body,
             timestamp: new Date(),
-            message_type:message.message_type
+            message_type: message.message_type
         }).save()
     },
     newCustomMessage: async function (message) {
@@ -189,11 +208,11 @@ const queries = {
             "author.id": message.author,
             body: message.body,
             timestamp: new Date(),
-            message_type:message.message_type,
-            title:message.title
+            message_type: message.message_type,
+            title: message.title
         }).save()
     },
-    newMessageReply: async function ( message) {
+    newMessageReply: async function (message) {
         return await Message.findOneAndUpdate({
             _id: message.message,
         }, {
@@ -205,7 +224,7 @@ const queries = {
                     timestamp: new Date(),
                 }
             },
-        },{new:true}).exec()
+        }, {new: true}).exec()
     },
     findGuardsInLocation: async function (location_id) {
         return await Guard.find({location: location_id}).exec()
@@ -252,22 +271,22 @@ const queries = {
     }
     ,
     getMessage: async function (id) {
-        return await Message.findById(id).sort({"replies.timestamp":-1}).exec()
+        return await Message.findById(id).sort({"replies.timestamp": -1}).exec()
     },
     getGuardAttendance: async function (guard_id) {
-        return await AttendanceRegister.find({guard_id:guard_id}).sort({date:-1}).exec()
+        return await AttendanceRegister.find({guard_id: guard_id}).sort({date: -1}).exec()
     },
     getAllGuardsAttendance: async function () {
-        return await AttendanceRegister.find({}).sort({date:-1}).exec()
+        return await AttendanceRegister.find({}).sort({date: -1}).exec()
     },
     getGuardInfo: async function (guard_id) {
-        return await Guard.findOne({guard_id:guard_id}).exec()
+        return await Guard.findOne({guard_id: guard_id}).exec()
     },
     getGuardContactInfo: async function (guard_id) {
-        return await Guard.findOne({guard_id:guard_id}).exec()
+        return await Guard.findOne({guard_id: guard_id}).exec()
     },
     getGuardPaymentInfo: async function (guard_id) {
-        return await Salary.findOne({guard_id:guard_id}).exec()
+        return await Salary.findOne({guard_id: guard_id}).exec()
     },
     isLocationExists: async function (args) {
         return await Location.findOne({name: args.name}).exec()

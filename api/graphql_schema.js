@@ -16,7 +16,7 @@ const shortid = require('shortid')//will help us name each upload uniquely
 const jsmediatags = require('jsmediatags')
 
 //Store the upload
-const storeFS = ({stream,filename}, id, uploader) => {
+const storeFS = ({stream, filename}, id, uploader) => {
     const uploadDir = `./public/uploads/${uploader}`
 
 // Ensure upload directory exists
@@ -223,6 +223,14 @@ const AttendanceRegister = new GraphQLObjectType({
         date: {type: GraphQLString},
     })
 })
+const SalaryBracketType = new GraphQLObjectType({
+    name: 'SalaryBracket',
+    fields: () => ({
+        id: {type: GraphQLID},
+        amount: {type: GraphQLInt},
+        contract: {type: GraphQLString},
+    })
+})
 const TokenType = new GraphQLObjectType({
     name: 'Token',
     fields: () => ({
@@ -358,6 +366,25 @@ const RootQuery = new GraphQLObjectType({
                 })
             }
         },
+        getAllSalaries: {
+            type: SalaryType,
+            async resolve(parent, args, ctx) {
+                return await queries.getAllSalaries()
+            }
+        },
+        isSalaryBracketExists: {
+            type: ExistsType,
+            args: {amount: {type: GraphQLInt},
+                contract: {type: GraphQLString}},
+            async resolve(parent, args) {
+                return await queries.isSalaryBracketExists(args).then(salary=>{
+                    if(salary){
+                        return {exists:true}
+                    }
+                    return {exists:false}
+                })
+            }
+        }
     }
 })
 const Mutation = new GraphQLObjectType({
@@ -374,6 +401,14 @@ const Mutation = new GraphQLObjectType({
                     return login
                 })
 
+            }
+        },
+        addSalaryBracket: {
+            type: SalaryBracketType,
+            args: {amount: {type: GraphQLInt},
+                contract: {type: GraphQLString}},
+            async resolve(parent, args) {
+                return await queries.addSalaryBracket(args)
             }
         },
         isUserExists: {

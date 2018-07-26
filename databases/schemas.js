@@ -120,6 +120,19 @@ const AttendanceRegisterSchema = new Schema({
     },
 })
 
+const SalaryBracketSchema = new Schema({
+    amount: {
+        type: Number,
+        required: [true, "how much is this guard being paid?"]
+    },
+    contract: {
+        type: String,
+        required: [true, "is this a daily, weekly or monthly paid guard?"],
+        enum: ['month', 'week', 'day'],
+        default: 'month'
+    },
+})
+
 const LocationSchema = new Schema({
     name: {
         type: String,
@@ -200,9 +213,9 @@ const Salary = mongoose.model('Salary', SalarySchema)
 const Message = mongoose.model('Message', MessageSchema)
 const Location = mongoose.model('Location', LocationSchema)
 const AttendanceRegister = mongoose.model('AttendanceRegister', AttendanceRegisterSchema)
-// const Report = mongoose.model('Report', ReportSchema)
+const SalaryBracket = mongoose.model('SalaryBracket', SalaryBracketSchema)
 
 //export the above models to used in other files
 module.exports = {
-    Guard, Salary, Message, AttendanceRegister, Location, Admin
+    Guard, Salary, Message, AttendanceRegister, Location, Admin,SalaryBracket
 }
