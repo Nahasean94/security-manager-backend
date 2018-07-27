@@ -139,7 +139,7 @@ const queries = {
         return await Salary.find({}).exec()
     },
     getPaymentForContract: async function (contract) {
-        return await SalaryBracket.find({contract:contract}).exec()
+        return await SalaryBracket.find({contract: contract}).exec()
     }
     ,
     isSalaryBracketExists: async function (args) {
@@ -168,10 +168,11 @@ const queries = {
 
         //todo do calculations for hourly rates
         const salary = await Salary.findOne({guard_id: register.guard_id}).exec()
+
         if (salary.contract === 'day') {
-            let total_ductions = 0
+            let total_deductions = 0
             salary.deductions.map(salo => {
-                total_ductions = total_ductions + salo.amount
+                total_deductions = total_deductions + salo.amount
             })
 
             const accountSid = 'AC7eea5ad0c0793fd647c6d7a596740fbc'
@@ -191,6 +192,16 @@ const queries = {
                 console.log("Could not send the message. Check you network connection")
             })
                 .done()
+            Salary.findByIdAndUpdate(salary._id, {
+                $push: {
+                    transactions:{
+                        amount:salary.gross_salary,
+                        timestamp:new Date(),
+                        text:message
+
+                    }
+                }
+            })
         }
         return attendance
     },
@@ -228,6 +239,12 @@ const queries = {
                     timestamp: new Date(),
                 }
             },
+        }, {new: true}).exec()
+    },
+    approveLeave: async function (message) {
+        console.log(message)
+        return await Message.findByIdAndUpdate(message.id, {
+            approved: true
         }, {new: true}).exec()
     },
     findGuardsInLocation: async function (location_id) {

@@ -367,7 +367,7 @@ const RootQuery = new GraphQLObjectType({
             }
         },
         getAllSalaries: {
-            type: SalaryType,
+            type: new GraphQLList(SalaryType),
             async resolve(parent, args, ctx) {
                 return await queries.getAllSalaries()
             }
@@ -609,6 +609,15 @@ const Mutation = new GraphQLObjectType({
             },
             async resolve(parent, args, ctx) {
                 return await queries.newMessageReply(args)
+            }
+        },
+        approveLeave: {
+            type: MessageType,
+            args: {
+                id: {type: GraphQLID},
+            },
+            async resolve(parent, args, ctx) {
+                return await queries.approveLeave(args)
             }
         },
         changePassword: {
